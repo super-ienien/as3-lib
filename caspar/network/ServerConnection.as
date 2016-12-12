@@ -271,6 +271,13 @@ package caspar.network
 			return command;
 		}
 		
+		public function Play(channel:uint, layer:uint, producer:String):String 
+		{
+			var command:String = 'PLAY ' + channel + (layer > -1 ? '-' + layer:'') + ' ' + producer + SOCKET_COMMAND_END;
+			_socket.addCommand( { command: command, type: ServerConnectionEvent.ON_OTHER_COMMAND } );
+			return command;
+		}		
+		
 		/**
 		 * Pauses foreground clip.
 		 * @param	channel The channel
