@@ -8,6 +8,10 @@
 	
 	public class Window {
 
+
+		public static const OVER_LAYER:String = 'over_layer';
+		public static const UNDER_LAYER:String = 'under_layer';
+		
 		public var channel: CasparChannel
 		public var cg:ServerConnection;
 
@@ -35,26 +39,42 @@
 			this.cgRect = new Rectangle();
 			this.channel = channel;
 			this.cg = channel.cg;
-			this.nextUpperLayer = layer > -1 ? layer-1:Window._getNextLayer()-1;
-			this.nextLowerLayer = this.nextUpperLayer;
+			this.nextUpperLayer = layer > -1 ? layer:Window._getNextLayer();
+			this.nextLowerLayer = this.nextUpperLayer-1;
+			this.init();
 		}
 
 		public function init(deferred:Boolean = false)
 		{
 			this.rect = new Rectangle();
 			this.cgRect = new Rectangle();
-			this.visible = false;
-			this.setTo(0, 0, 0, 0);
+			this.visible = true;
+			this.setTo(0, 0, this.channel.coord.screenWidth, this.channel.coord.screenHeight);
 			this.send(deferred);
 			return this;
 		}
 		
-		public function addLayer(name:String, type:String, upper:Boolean = true, external:Boolean = false, align:String = ''):WindowLayer
+		public function addLayer(name:String, type:String, level:* = Window.OVER_LAYER, external:Boolean = false, align:String = ''):WindowLayer
 		{
 			if (this.layers[name]) return this.layers[name];
-			var layerId = upper ? this.nextUpperLayer++:this.nextLowerLayer--;
+			var layerId ;
+			switch (level)
+			{
+				case Window.OVER_LAYER:
+					layerId = this.nextUpperLayer;
+					this.nextUpperLayer++;
+				break;
+				case Window.UNDER_LAYER:
+					layerId = this.nextLowerLayer;
+					this.nextLowerLayer--;
+				break;
+				default:
+					layerId = level;
+				break;
+			}
 			var layer = new WindowLayer(this, layerId, type, external, align);
 			this.layers[name] = layer;
+			if (!this.visible) layer.setVisible(false);
 			return layer;
 		}
 		
@@ -63,12 +83,13 @@
 			return this.layers[name];
 		}
 		
-		public function setVisible(value:Boolean)
+		public function setVisible(value:Boolean):Window
 		{
 			for (var i in this.layers)
 			{
 				this.layers[i].setVisible(value);
 			}
+			return this;
 		}
 		
 		public function scaleX(x:int):Window
@@ -103,18 +124,15 @@
 				
 		public function setTo(x:int, y:int, width:int, height:int):Window
 		{
-			trace(0);
 			this.rect.width = width;
 			this.rect.height = height;
 			this.rect.x = x;
 			this.rect.y = y;
-			trace(1);
 			this.ratio = width/height;
 			this.cgRect.width = this.channel.coord.width(width);
 			this.cgRect.height = this.channel.coord.height(height);
 			this.cgRect.x = this.channel.coord.x(x);
 			this.cgRect.y = this.channel.coord.y(y);
-			trace(2);
 
 			for (var i in this.layers)
 			{
@@ -131,6 +149,7 @@
 		
 		public function send(deferred: Boolean = false, duration: int = 0, ease: String = '')
 		{
+			trace('send');
 			for (var i in this.layers)
 			{
 				this.layers[i].send(true, duration, ease);

@@ -252,9 +252,9 @@ package caspar.network
 		 * @param	file The file to load
 		 * @param	loop Loop the clip (default: false)
 		 */
-		public function LoadMedia(channel:uint, layer:int, file:String, loop:Boolean = false):String 
+		public function LoadMedia(channel:uint, layer:int, file:String, loop:Boolean = false, seek:int = -1):String 
 		{
-			var command:String = 'LOAD ' + channel + '-' + layer + ' \"' + file + '\" ' + (loop ? "LOOP" : "") + SOCKET_COMMAND_END;
+			var command:String = 'LOAD ' + channel + '-' + layer + ' \"' + file + '\" ' + (loop ? "LOOP " : "") + (seek > -1 ? "SEEK " + seek: "") + SOCKET_COMMAND_END;
 			_socket.addCommand( { command: command, type: ServerConnectionEvent.ON_OTHER_COMMAND } );
 			return command;
 		}
