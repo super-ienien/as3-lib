@@ -490,6 +490,13 @@ package caspar.network
 		// Mixer Commands
 		/////////////////
 		
+		public function MixerMipmap(channel:uint, layer:uint, enabled:Boolean):String 
+		{
+			var command:String = 'MIXER ' + channel + '-' + layer + ' MIPMAP ' + (enabled ? '1':'0') + SOCKET_COMMAND_END;
+			_socket.addCommand( { command: command, type: ServerConnectionEvent.ON_OTHER_COMMAND } );
+			return command;
+		}
+
 		public function MixerAnchor(channel:uint, layer:uint, x:Number, y:Number, defer:Boolean = false):String 
 		{
 			var command:String = 'MIXER ' + channel + '-' + layer + ' ANCHOR ' + x + ' ' + y + (defer ? ' DEFER':'') + SOCKET_COMMAND_END;

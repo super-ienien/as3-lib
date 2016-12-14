@@ -23,6 +23,7 @@
 		public var nextLowerLayer:int;
 		public var layers:Object = {};
 		public var visible:Boolean;
+		public var cleared:Boolean;
 		
 		public static function _getNextLayer():int
 		{
@@ -39,13 +40,20 @@
 			this.cgRect = new Rectangle();
 			this.channel = channel;
 			this.cg = channel.cg;
+
 			this.nextUpperLayer = layer > -1 ? layer:Window._getNextLayer();
 			this.nextLowerLayer = this.nextUpperLayer-1;
+
 			this.init();
 		}
 
-		public function init(deferred:Boolean = false)
+		public function init(deferred:Boolean = false):Window
 		{
+			this.cleared = false;
+			for (var i in this.layers)
+			{
+				this.layers[i].init();
+			}
 			this.rect = new Rectangle();
 			this.cgRect = new Rectangle();
 			this.visible = true;
@@ -76,6 +84,13 @@
 			this.layers[name] = layer;
 			if (!this.visible) layer.setVisible(false);
 			return layer;
+		}
+		
+		public function removeLayer(name:String)
+		{
+			if (!this.layers[name]) return this;
+			this.layers[name].clear();
+			delete this.layers[name];
 		}
 		
 		public function layer(name:String):WindowLayer
@@ -142,10 +157,23 @@
 			return this;
 		}
 
-		public function clear()
+		public function clear():Window
 		{
+			this.cleared = true;
 			this.init();
+			return this;
 		}
+
+		public function destroy():Window
+		{
+			for (var i in this.layers)
+			{
+				this.layers[i].clear();
+			}
+			this.layers = {};
+			this.cleared = true;
+			return this;
+		}		
 		
 		public function send(deferred: Boolean = false, duration: int = 0, ease: String = '')
 		{
